@@ -4,16 +4,16 @@
 // Propósito: Centralizar la conexión a PostgreSQL para todo el proyecto
 // ======================================================================
 
-
+// Mostrar errores (solo para desarrollo; quita esto en producción)
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
-
-$host = "localhost";        
+// Parámetros de conexión
+$host = "localhost";
 $port = "5432";             
 $dbname = "productos_db";   
 $user = "whouser";         
-$pass = "fqiewfiuuqwbe";    
+$pass = "whopassword";    
 
 try {
     // Crear la conexión usando PDO

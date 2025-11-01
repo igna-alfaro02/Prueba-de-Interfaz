@@ -30,8 +30,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $conn->beginTransaction();
 
         $sql = "INSERT INTO productos 
-                (codigo, nombre, bodega, sucursal, moneda, precio)
-                VALUES (:codigo, :nombre, :bodega, :sucursal, :moneda, :precio)
+                (codigo, nombre, bodega, sucursal, moneda, precio, descripcion)
+                VALUES (:codigo, :nombre, :bodega, :sucursal, :moneda, :precio, :descripcion)
                 RETURNING id_producto";
 
         $stmt = $conn->prepare($sql);
@@ -41,7 +41,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             ':bodega'   => $bodega,
             ':sucursal' => $sucursal,
             ':moneda'   => $moneda,
-            ':precio'   => $precio
+            ':precio'   => $precio,
+            ':descripcion' => $descripcion
         ]);
 
         $id_producto = $stmt->fetchColumn();
@@ -64,12 +65,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         echo json_encode(["status" => "success", "message" => "✅ Producto registrado correctamente."]);
 
     } catch (PDOException $e) {
-        $conn->rollBack();
+    $conn->rollBack();
+
+    // Verificar si el error fue por clave duplicada
+    if ($e->getCode() == '23505') {
         echo json_encode([
             "status" => "error",
-            "message" => "⚠️ Error SQL: " . $e->getMessage()
+            "message" => "❌ El código del producto ya existe. Ingrese un código diferente."
+        ]);
+    } else {
+        echo json_encode([
+            "status" => "error",
+            "message" => "⚠️ Error al guardar: " . $e->getMessage()
         ]);
     }
+}
 
 } else {
     echo json_encode(["status" => "error", "message" => "Método no permitido."]);
