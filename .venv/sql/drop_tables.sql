@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS producto_material CASCADE;
+DROP TABLE IF EXISTS productos CASCADE;
