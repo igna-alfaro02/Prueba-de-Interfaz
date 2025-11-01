@@ -1,0 +1,111 @@
+Proyecto: Prueba de Diagnóstico — Sistema de Registro de Productos
+Tecnologías: HTML, CSS, JavaScript (nativo), PHP (PDO), PostgreSQL
+
+---
+
+# 1. Resumen
+Este proyecto es un sistema simple para registrar productos.  
+El frontend es HTML/CSS y JavaScript nativo (validaciones + envío por AJAX).  
+El backend es PHP puro (sin frameworks) que se comunica con PostgreSQL.  
+Incluye SQL para crear las tablas necesarias.
+
+---
+
+# 2. Requisitos (software)
+- PHP 8.x (CLI) con extensión `pdo_pgsql` y `pgsql` habilitadas.  
+- PostgreSQL (recomendado 12+).  
+- Navegador moderno (Chrome / Firefox).  
+- Git (para clonar el repo).  
+(Opcional) pgAdmin para administrar la base de datos.
+
+Versiones probadas: PHP 8.x, PostgreSQL 12–16. Ajusta según tu entorno.
+
+---
+
+# 3. Estructura del proyecto
+/
+├── index.html
+├── api/
+│   └── save_producto.php
+├── include/
+│   └── db.php
+├── assets/
+│   ├── css/styles.css
+│   └── js/app.js
+├── sql/
+│   ├── create_tables.sql
+│   └── seed_data.sql (opcional)
+└── LEEME.txt
+
+# 4. Configurar PostgreSQL (crear base de datos y usuario)
+Puedes usar pgAdmin (GUI) o la consola `psql`.
+
+## Opción GUI (pgAdmin)
+1. Abrir pgAdmin → conectar al servidor (usa la contraseña creada en instalación).  
+2. Click derecho en **Databases** → **Create** → Name: `productos_db` → Save.  
+3. (Opcional) Crear rol/usuario (Login/Group Role) `miusuario` con contraseña.
+
+## Opción consola (psql)
+En una terminal:
+psql -h localhost -U postgres
+CREATE DATABASE productos_db;
+CREATE USER miusuario WITH PASSWORD 'tu_contraseña_segura';
+GRANT ALL PRIVILEGES ON DATABASE productos_db TO miusuario;
+\q
+
+---
+
+# 5. Crear tablas (usar SQL entregado)
+Desde pgAdmin → Query Tool (selecciona `productos_db`) o desde terminal con `psql`:
+
+psql -h localhost -U postgres -d productos_db -f sql/create_tables.sql
+
+Ejemplo de tablas:
+
+CREATE TABLE productos (
+    id_producto SERIAL PRIMARY KEY,
+    codigo VARCHAR(50) NOT NULL,
+    nombre VARCHAR(100) NOT NULL,
+    bodega VARCHAR(100) NOT NULL,
+    sucursal VARCHAR(100) NOT NULL,
+    moneda VARCHAR(20) NOT NULL,
+    precio NUMERIC(10,2) NOT NULL
+);
+
+CREATE TABLE producto_material (
+    id_material SERIAL PRIMARY KEY,
+    id_producto INT REFERENCES productos(id_producto) ON DELETE CASCADE,
+    material VARCHAR(50) NOT NULL
+);
+
+---
+
+# 6. Configurar conexión PHP (include/db.php)
+En la carpeta `include/` crea `db.php` **local** (no versionar) con este formato:
+
+<?php
+$host = "localhost";
+$port = "5432";
+$dbname = "productos_db";
+$user = "miusuario";
+$pass = "tu_contraseña_segura";
+
+try {
+    $conn = new PDO("pgsql:host=$host;port=$port;dbname=$dbname", $user, $pass);
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $conn->exec("SET NAMES 'UTF8'");
+} catch (PDOException $e) {
+    die("Error al conectar a la base de datos: " . $e->getMessage());
+}
+?>
+
+# 7. Ejecutar el proyecto localmente (servidor PHP embebido)
+php -S localhost:8000
+
+Abre en el navegador:
+http://localhost:8000/index.html
+
+# 8. Probar la conexión y la inserción
+- Test conexión DB: visita `http://localhost:8000/test_db.php`.  
+- Prueba registro: abre `index.html`, completa el formulario y presiona **Guardar Producto**.  
+  - Si todo está OK, recibirás aviso y los datos se guardarán en `productos` y `producto_material`.
