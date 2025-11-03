@@ -1,14 +1,40 @@
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("formProducto");
+  const bodegaSelect = document.getElementById("bodega");
+  const sucursalSelect = document.getElementById("sucursal");
 
+  // Datos de relación entre bodegas y sucursales
+  const sucursalesPorBodega = {
+    "Bodega 1": ["Sucursal 1", "Sucursal 2"],
+    "Bodega 2": ["Sucursal 3", "Sucursal 4"]
+  };
+
+  // Evento: cuando cambie la bodega, actualizar sucursales
+  bodegaSelect.addEventListener("change", function () {
+    const bodegaSeleccionada = this.value;
+
+    // Limpiar sucursales anteriores
+    sucursalSelect.innerHTML = '<option value=""></option>';
+
+    if (sucursalesPorBodega[bodegaSeleccionada]) {
+      sucursalesPorBodega[bodegaSeleccionada].forEach(sucursal => {
+        const option = document.createElement("option");
+        option.value = sucursal;
+        option.textContent = sucursal;
+        sucursalSelect.appendChild(option);
+      });
+    }
+  });
+
+  // Evento submit del formulario
   form.addEventListener("submit", async (event) => {
-  event.preventDefault();
+    event.preventDefault();
 
     // Obtener valores
     const codigo = document.getElementById("codigo_producto").value.trim();
     const nombre = document.getElementById("nombre_producto").value.trim();
-    const bodega = document.getElementById("bodega").value;
-    const sucursal = document.getElementById("sucursal").value;
+    const bodega = bodegaSelect.value;
+    const sucursal = sucursalSelect.value;
     const moneda = document.getElementById("moneda").value;
     const precio = document.getElementById("precio").value.trim();
     const descripcion = document.getElementById("descripcion").value.trim();
@@ -99,7 +125,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (result.status === "success") {
       form.reset();
+      // Restablecer sucursal
+      sucursalSelect.innerHTML = '<option value="">Seleccione una sucursal</option>';
     }
-      
-    });
+  });
 });
